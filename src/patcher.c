@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "patchfinder.h"
+#include "plooshfinder.h"
 #include "patches/platform/tvos.h"
 
 void *dyld_buf;

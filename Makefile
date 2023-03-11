@@ -1,14 +1,21 @@
-INCLDIRS = -I./include
+INCLDIRS = -I./include -I./plooshfinder/include
 SRC = $(wildcard src/*)
 TVOS_SRC = src/patches/platform/tvos.c
 OBJDIR = obj
 OBJS = $(patsubst src/%,$(OBJDIR)/%,$(SRC:.c=.o))
 TVOS_OBJS = $(OBJDIR)/patches/platform/tvos.o
+PLOOSHFINDER = plooshfinder/libplooshfinder.a
 
-LDFLAGS ?= -fuse-ld=lld
+LDFLAGS ?= -fuse-ld=lld -Lplooshfinder
 CC := clang
+LIBS = -lplooshfinder
 
-all: dirs $(TVOS_OBJS) $(OBJS) Dyld64Patcher
+.PHONY: all
+
+all: dirs $(PLOOSHFINDER) $(TVOS_OBJS) $(OBJS) Dyld64Patcher
+
+submodules:
+	@git submodule update --init --remote --recursive || true
 
 dirs:
 	@mkdir -p $(OBJDIR)
@@ -19,10 +26,13 @@ clean:
 	@rm -rf Dyld64Patcher obj
 
 Dyld64Patcher: $(TVOS_OBJS) $(OBJS)
-	$(CC) $(CFLAGS) $(LDFLAGS) $(INCLDIRS) $(TVOS_OBJS) $(OBJS) -o $@
+	$(CC) $(CFLAGS) $(LDFLAGS) $(LIBS) $(INCLDIRS) $(TVOS_OBJS) $(OBJS) -o $@
 
 $(OBJDIR)/%.o: src/%.c
 	$(CC) $(CFLAGS) $(INCLDIRS) -c -o $@ $<
 
 $(OBJDIR)/patches/platform/%.o: patches/platform/%.c
 	$(CC) $(CFLAGS) $(INCLDIRS) -c -o $@ $<
+
+$(PLOOSHFINDER):
+	$(MAKE) -C plooshfinder all
