@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 #include "plooshfinder.h"
-#include "patches/platform/tvos.h"
+#include "patches/platform/ios15.h"
 
 void *dyld_buf;
 size_t dyld_len;
@@ -40,7 +40,7 @@ bool platform_check_callback(uint32_t *stream) {
 bool platform_check_callback_old(uint32_t *stream) {
     stream[0] = 0x52800001 | (platform << 5);
 
-    printf("%s: Patched OLD platform check (mov: 0x%x)\n", __FUNCTION__, 0x52800001 | (platform << 5));
+    printf("%s: Patched platform check (mov: 0x%x)\n", __FUNCTION__, 0x52800001 | (platform << 5));
 
     return true;
 }
@@ -86,8 +86,8 @@ void patch_platform_check() {
 
     pf_find_maskmatch32(dyld_buf, dyld_len, matches_old, masks_old, sizeof(matches_old) / sizeof(uint32_t), (void *)platform_check_callback_old);
 
-    // tvos has even more to find, so i moved it to a seperate file & function
-    patch_platform_check_tvos(dyld_buf, dyld_len, platform);
+    // ios 15 has even more to find, so i moved it to a seperate file & function
+    patch_platform_check15(dyld_buf, dyld_len, platform);
 }
 
 int main(int argc, char **argv) {
