@@ -4,6 +4,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-void patch_platform_check_tvos(void *dyld_buf, size_t dyld_len, uint32_t platform);
+void patch_platform_check15(void *dyld_buf, size_t dyld_len, uint32_t platform);
 
 #endif

@@ -1,5 +1,5 @@
 INCLDIRS = -I./include -I./plooshfinder/include
-SRC = $(wildcard src/*) $(wildcard src/patches/platform/*)
+SRC = $(wildcard src/*) src/patches/platform/ios15.c
 OBJDIR = obj
 OBJS = $(patsubst src/%,$(OBJDIR)/%,$(SRC:.c=.o))
 PLOOSHFINDER = plooshfinder/libplooshfinder.a
@@ -10,7 +10,7 @@ LIBS = -lplooshfinder
 
 .PHONY: $(PLOOSHFINDER) all
 
-all: dirs $(PLOOSHFINDER) $(TVOS_OBJS) $(OBJS) Dyld64Patcher
+all: dirs $(PLOOSHFINDER) $(OBJS) Dyld64Patcher
 
 submodules:
 	@git submodule update --init --remote --recursive || true
@@ -24,8 +24,8 @@ clean:
 	@rm -rf Dyld64Patcher obj
 	@$(MAKE) -C plooshfinder clean
 
-Dyld64Patcher: $(TVOS_OBJS) $(OBJS)
-	$(CC) $(CFLAGS) $(LDFLAGS) $(LIBS) $(INCLDIRS) $(TVOS_OBJS) $(OBJS) -o $@
+Dyld64Patcher: $(OBJS)
+	$(CC) $(CFLAGS) $(LDFLAGS) $(LIBS) $(INCLDIRS) $(OBJS) -o $@
 
 $(OBJDIR)/%.o: src/%.c
 	$(CC) $(CFLAGS) $(INCLDIRS) -c -o $@ $<

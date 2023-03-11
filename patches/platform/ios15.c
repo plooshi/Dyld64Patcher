@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "plooshfinder.h"
+#include "patches/platform/ios15.h"
 
 int _internal_platform = 0;
 
