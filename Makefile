@@ -6,11 +6,11 @@ OBJS = $(patsubst src/%,$(OBJDIR)/%,$(SRC:.c=.o))
 TVOS_OBJS = $(OBJDIR)/patches/platform/tvos.o
 PLOOSHFINDER = plooshfinder/libplooshfinder.a
 
-LDFLAGS ?= -fuse-ld=lld -Lplooshfinder
+LDFLAGS ?= -fuse-ld=lld -L./plooshfinder
 CC := clang
 LIBS = -lplooshfinder
 
-.PHONY: all
+.PHONY: $(PLOOSHFINDER) all
 
 all: dirs $(PLOOSHFINDER) $(TVOS_OBJS) $(OBJS) Dyld64Patcher
 
@@ -24,6 +24,7 @@ dirs:
 
 clean:
 	@rm -rf Dyld64Patcher obj
+	@$(MAKE) -C plooshfinder clean
 
 Dyld64Patcher: $(TVOS_OBJS) $(OBJS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(LIBS) $(INCLDIRS) $(TVOS_OBJS) $(OBJS) -o $@
