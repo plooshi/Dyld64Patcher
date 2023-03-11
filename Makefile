@@ -1,9 +1,7 @@
 INCLDIRS = -I./include -I./plooshfinder/include
-SRC = $(wildcard src/*)
-TVOS_SRC = src/patches/platform/tvos.c
+SRC = $(wildcard src/*) $(wildcard src/patches/platform/*)
 OBJDIR = obj
 OBJS = $(patsubst src/%,$(OBJDIR)/%,$(SRC:.c=.o))
-TVOS_OBJS = $(OBJDIR)/patches/platform/tvos.o
 PLOOSHFINDER = plooshfinder/libplooshfinder.a
 
 LDFLAGS ?= -fuse-ld=lld -L./plooshfinder
