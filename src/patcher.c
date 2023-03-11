@@ -65,7 +65,7 @@ void patch_platform_check() {
         0xfffffc1f
     };
 
-    pf_find_maskmatch(dyld_buf, dyld_len, matches, masks, sizeof(matches) / sizeof(uint32_t), (void *)platform_check_callback);
+    pf_find_maskmatch32(dyld_buf, dyld_len, matches, masks, sizeof(matches) / sizeof(uint32_t), (void *)platform_check_callback);
 
     // ios 14 and lower
     uint32_t matches_old[] = {
@@ -78,13 +78,13 @@ void patch_platform_check() {
         0xffffffff
     };
 
-    pf_find_maskmatch(dyld_buf, dyld_len, matches_old, masks_old, sizeof(matches_old) / sizeof(uint32_t), (void *)platform_check_callback_old);
+    pf_find_maskmatch32(dyld_buf, dyld_len, matches_old, masks_old, sizeof(matches_old) / sizeof(uint32_t), (void *)platform_check_callback_old);
 
     // ios 12 version
     matches_old[0] = 0x320001e1; // orr w1, wzr, *
     masks_old[0] = 0xffe001ff;
 
-    pf_find_maskmatch(dyld_buf, dyld_len, matches_old, masks_old, sizeof(matches_old) / sizeof(uint32_t), (void *)platform_check_callback_old);
+    pf_find_maskmatch32(dyld_buf, dyld_len, matches_old, masks_old, sizeof(matches_old) / sizeof(uint32_t), (void *)platform_check_callback_old);
 
     // tvos has even more to find, so i moved it to a seperate file & function
     patch_platform_check_tvos(dyld_buf, dyld_len, platform);

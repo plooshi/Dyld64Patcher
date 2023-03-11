@@ -32,12 +32,12 @@ void patch_platform_check_tvos(void *dyld_buf, size_t dyld_len, uint32_t platfor
         0xffe0001f,
         0xfc000000
     };
-    pf_find_maskmatch(dyld_buf, dyld_len, tvos_matches, tvos_masks, sizeof(tvos_matches) / sizeof(uint32_t), (void *)platform_check_callback_tvos);
+    pf_find_maskmatch32(dyld_buf, dyld_len, tvos_matches, tvos_masks, sizeof(tvos_matches) / sizeof(uint32_t), (void *)platform_check_callback_tvos);
 
     tvos_matches[4] = 0xd63f0000; // blr x*
     tvos_masks[4] = 0xfffffc1f;
 
-    pf_find_maskmatch(dyld_buf, dyld_len, tvos_matches, tvos_masks, sizeof(tvos_matches) / sizeof(uint32_t), (void *)platform_check_callback_tvos);
+    pf_find_maskmatch32(dyld_buf, dyld_len, tvos_matches, tvos_masks, sizeof(tvos_matches) / sizeof(uint32_t), (void *)platform_check_callback_tvos);
 
     // this codegen SUCKS
     uint32_t tvos_matches2[] = {
@@ -56,5 +56,5 @@ void patch_platform_check_tvos(void *dyld_buf, size_t dyld_len, uint32_t platfor
         0xfc000000
     };
 
-    pf_find_maskmatch(dyld_buf, dyld_len, tvos_matches2, tvos_masks2, sizeof(tvos_matches2) / sizeof(uint32_t), (void *)platform_check_callback_tvos);
+    pf_find_maskmatch32(dyld_buf, dyld_len, tvos_matches2, tvos_masks2, sizeof(tvos_matches2) / sizeof(uint32_t), (void *)platform_check_callback_tvos);
 }
