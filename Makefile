@@ -1,8 +1,10 @@
-INCLDIRS = -I./include -I./plooshfinder/include
-SRC = $(wildcard src/*) src/patches/platform/ios15.c
+PLATFORM_SRC = $(wildcard patches/platform/*)
+SRC = $(wildcard src/*)
 OBJDIR = obj
-OBJS = $(patsubst src/%,$(OBJDIR)/%,$(SRC:.c=.o))
+PLATFORM_OBJS = $(patsubst patches/platform/%,$(OBJDIR)/patches/platform/%,$(PLATFORM_SRC:.c=.o))
+OBJS = $(patsubst src/%,$(OBJDIR)/%,$(SRC:.c=.o)) $(PLATFORM_OBJS)
 PLOOSHFINDER = plooshfinder/libplooshfinder.a
+INCLDIRS = -I./include -I./plooshfinder/include
 
 LDFLAGS ?= -fuse-ld=lld -L./plooshfinder
 CC := clang
