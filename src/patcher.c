@@ -35,7 +35,7 @@ void patch_platform_check() {
     // this patch tricks dyld into thinking everything is for the current platform
     patch_platform_check_old(dyld_buf, dyld_len, platform);
     patch_platform_check15(dyld_buf, dyld_len, platform);
-    patch_platform_check16(dyld_buf, dyld_len, platform); 
+    patch_platform_check16(dyld_buf, dyld_len, platform);
 }
 
 int main(int argc, char **argv) {
