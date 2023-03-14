@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
 
     patch_platform_check();
 
-    fp = fopen(argv[2], "wb+");
+    fp = fopen(argv[2], "wb");
     if(!fp) {
         printf("Failed to open output file!\n");
         free(dyld_buf);
