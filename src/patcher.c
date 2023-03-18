@@ -1,8 +1,9 @@
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "plooshfinder.h"
+#include "macho.h"
 #include "patches/platform/old.h"
 #include "patches/platform/ios15.h"
 #include "patches/platform/ios16.h"
@@ -33,9 +34,13 @@ int get_platform() {
 
 void patch_platform_check() {
     // this patch tricks dyld into thinking everything is for the current platform
-    patch_platform_check_old(dyld_buf, dyld_len, platform);
-    patch_platform_check15(dyld_buf, dyld_len, platform);
-    patch_platform_check16(dyld_buf, dyld_len, platform);
+    struct section_64 *text_section = macho_find_section(dyld_buf, "__TEXT", "__text");
+    void *section_addr = dyld_buf + text_section->addr;
+    uint64_t section_len = text_section->size;
+
+    patch_platform_check_old(section_addr, section_len, platform);
+    patch_platform_check15(section_addr, section_len, platform);
+    patch_platform_check16(section_addr, section_len, platform);
 }
 
 int main(int argc, char **argv) {
@@ -65,6 +70,10 @@ int main(int argc, char **argv) {
 
     fread(dyld_buf, 1, dyld_len, fp);
     fclose(fp);
+
+    if (!is_macho(dyld_buf)) {
+        return 1;
+    }
 
     if (get_platform() != 0) {
         printf("Failed to get platform!\n");
