@@ -26,7 +26,7 @@ clean:
 	@rm -rf Dyld64Patcher obj
 	@$(MAKE) -C plooshfinder clean
 
-Dyld64Patcher: $(OBJS)
+Dyld64Patcher: $(OBJS) $(PLOOSHFINDER)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(LIBS) $(INCLDIRS) $(OBJS) -o $@
 
 $(OBJDIR)/%.o: src/%.c
