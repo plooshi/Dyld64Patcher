@@ -9,6 +9,7 @@ INCLDIRS = -I./include -I./plooshfinder/include
 LDFLAGS ?= -fuse-ld=lld -L./plooshfinder
 CC := clang
 LIBS = -lplooshfinder
+CFLAGS ?= -O2
 
 .PHONY: $(PLOOSHFINDER) all
 

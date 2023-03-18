@@ -2,11 +2,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "plooshfinder.h"
 #include "macho.h"
-#include "patches/platform/old.h"
+#include "plooshfinder.h"
 #include "patches/platform/ios15.h"
 #include "patches/platform/ios16.h"
+#include "patches/platform/old.h"
 
 void *dyld_buf;
 size_t dyld_len;
@@ -35,12 +35,14 @@ int get_platform() {
 void patch_platform_check() {
     // this patch tricks dyld into thinking everything is for the current platform
     struct section_64 *text_section = macho_find_section(dyld_buf, "__TEXT", "__text");
-    void *section_addr = dyld_buf + text_section->addr;
+    if (!text_section) return;
+
+    void *section_addr = dyld_buf + text_section->offset;
     uint64_t section_len = text_section->size;
 
-    patch_platform_check_old(section_addr, section_len, platform);
     patch_platform_check15(section_addr, section_len, platform);
     patch_platform_check16(section_addr, section_len, platform);
+    patch_platform_check_old(section_addr, section_len, platform);
 }
 
 int main(int argc, char **argv) {
@@ -71,12 +73,25 @@ int main(int argc, char **argv) {
     fread(dyld_buf, 1, dyld_len, fp);
     fclose(fp);
 
-    if (!is_macho(dyld_buf)) {
+    uint32_t magic = macho_get_magic(dyld_buf);
+
+    if (!magic) {
+        free(dyld_buf);
         return 1;
+    }
+
+    void *orig_dyld_buf = dyld_buf;
+    if (magic == 0xbebafeca) {
+        dyld_buf = macho_find_arch(dyld_buf, CPU_TYPE_ARM64);
+        if (!dyld_buf) {
+            free(orig_dyld_buf);
+            return 1;
+        }
     }
 
     if (get_platform() != 0) {
         printf("Failed to get platform!\n");
+        free(orig_dyld_buf);
         return 1;
     }
 
@@ -85,15 +100,15 @@ int main(int argc, char **argv) {
     fp = fopen(argv[2], "wb");
     if(!fp) {
         printf("Failed to open output file!\n");
-        free(dyld_buf);
+        free(orig_dyld_buf);
         return -1;
     }
     
-    fwrite(dyld_buf, 1, dyld_len, fp);
+    fwrite(orig_dyld_buf, 1, dyld_len, fp);
     fflush(fp);
     fclose(fp);
 
-    free(dyld_buf);
+    free(orig_dyld_buf);
 
     return 0;
 }
