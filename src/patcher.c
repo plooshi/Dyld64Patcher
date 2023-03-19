@@ -12,26 +12,6 @@ void *dyld_buf;
 size_t dyld_len;
 int platform = 0;
 
-int get_platform() {
-    void *after_header = (char *)dyld_buf + 0x20;
-    void *before_platform = after_header;
-
-    while (*(uint32_t *)before_platform != 0x32) {
-        before_platform += 4;
-    }
-
-    if (*(uint8_t *)before_platform == 0x32) {
-        uint32_t *platform_ptr = (uint32_t *)before_platform + 2;
-        platform = *platform_ptr;
-    }
-
-    if (platform > 5) {
-        printf("Unknown platform!\n");
-        return 1;
-    }
-    return 0;
-}
-
 void patch_platform_check() {
     // this patch tricks dyld into thinking everything is for the current platform
     struct section_64 *text_section = macho_find_section(dyld_buf, "__TEXT", "__text");
@@ -63,7 +43,7 @@ int main(int argc, char **argv) {
     dyld_len = ftell(fp);
     fseek(fp, 0, SEEK_SET);
 
-    dyld_buf = (void *)malloc(dyld_len);
+    dyld_buf = (void *) malloc(dyld_len);
     if (!dyld_buf) {
         printf("Out of memory while allocating region for dyld!\n");
         fclose(fp);
@@ -89,8 +69,8 @@ int main(int argc, char **argv) {
         }
     }
 
-    if (get_platform() != 0) {
-        printf("Failed to get platform!\n");
+    platform = macho_get_platform(dyld_buf);
+    if (platform == 0) {
         free(orig_dyld_buf);
         return 1;
     }
