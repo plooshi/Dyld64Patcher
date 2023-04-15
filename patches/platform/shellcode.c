@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "plooshfinder.h"
 #include "macho.h"
-#include "patches/platform/ios16_shc.h"
+#include "patches/platform/shellcode.h"
 
 uint32_t *shc_loc;
 
@@ -19,7 +19,7 @@ uint32_t *get_shc_region(void *buf) {
     void *section_addr = buf + section->offset;
     uint64_t section_len = section->size;
 
-    void *shc_addr = section_addr + section_len + 0x1000;
+    void *shc_addr = section_addr + section_len + 0x500;
 
     shc_loc = (uint32_t *) shc_addr;
 

@@ -4,7 +4,7 @@
 #include "plooshfinder.h"
 #include "macho.h"
 #include "patches/platform/ios16.h"
-#include "patches/platform/ios16_shc.h"
+#include "patches/platform/shellcode.h"
 
 int _internal16_platform = 0;
 void *_internal16_rbuf;
