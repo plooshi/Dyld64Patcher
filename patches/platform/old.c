@@ -1,6 +1,6 @@
 #include <stdbool.h>
 #include <stdio.h>
-#include "plooshfinder.h"
+#include "plooshfinder32.h"
 #include "patches/platform/old.h"
 
 int _internal_old_platform = 0;

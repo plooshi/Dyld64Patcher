@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include "plooshfinder.h"
+#include "plooshfinder32.h"
 #include "macho.h"
 #include "patches/platform/shellcode.h"
 

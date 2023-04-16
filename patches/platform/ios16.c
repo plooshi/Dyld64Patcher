@@ -1,7 +1,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "plooshfinder.h"
+#include "plooshfinder32.h"
 #include "macho.h"
 #include "patches/platform/ios16.h"
 #include "patches/platform/shellcode.h"
