@@ -25,7 +25,7 @@ void old_copy_shc() {
     }
 }
 
-bool platform_check_callback_old(struct pf_patch32_t patch, uint32_t *stream) {
+bool inject_shc_old(struct pf_patch32_t patch, uint32_t *stream) {
     old_copy_shc();
 
     stream[1] = 0x14000000 | (uint32_t) (_internal_old_shc_loc - stream - 1);
@@ -51,7 +51,7 @@ void patch_platform_check_old(void *real_buf, void *dyld_buf, size_t dyld_len, u
         0xffffffff
     };
 
-    struct pf_patch32_t patch = pf_construct_patch32(matches, masks, sizeof(matches) / sizeof(uint32_t), (void *) platform_check_callback_old);
+    struct pf_patch32_t patch = pf_construct_patch32(matches, masks, sizeof(matches) / sizeof(uint32_t), (void *) inject_shc_old);
 
     struct pf_patch32_t patches[] = {
         patch
