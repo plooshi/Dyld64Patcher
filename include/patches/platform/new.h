@@ -1,5 +1,5 @@
-#ifndef _PLATFORM_IOS15_H
-#define _PLATFORM_IOS15_H
+#ifndef _PLATFORM_NEW_H
+#define _PLATFORM_NEW_H
 #include <stdint.h>
 #include <stdlib.h>
 
