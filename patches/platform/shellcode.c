@@ -44,11 +44,6 @@ uint32_t *copy_shc(int platform, uint32_t jmp) {
         return 0;
     }
 
-    bool with_link = true;
-    if ((jmp & 0xfffffc1f) == 0xd61f0000) {
-        with_link = false;
-    }
-
     uint32_t shellcode[] = {
         0xf100283f, // cmp x1, 10
         0x54000040, // b.eq 0x8
