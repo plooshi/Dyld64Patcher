@@ -14,7 +14,7 @@ uint32_t *get_shc_region(void *buf) {
     // this is done so our shellcode is in an executable region
     // __unwind_info is the last section in __TEXT,
     // so we just go into the zero region and
-    // place our shellcode 0x1000 bytes in
+    // place our shellcode about half way in
     
     struct segment_command_64 *segment = macho_get_segment(buf, "__TEXT");
     if (!segment) return 0;
