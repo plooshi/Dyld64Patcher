@@ -18,13 +18,16 @@ bool inject_shc_new(struct pf_patch32_t patch, uint32_t *stream) {
         }
     }
     
-    uint32_t *b = pf_find_next(stream, 10, 0x14000000, 0xfc000000);
-    uint32_t *blr;
+    
+    uint32_t *blr = pf_find_next(stream, 10, 0xd63f0000, 0xfffffc1f);;
 
-    if (!b) {
-        blr = pf_find_next(stream, 10, 0xd63f0000, 0xfffffc1f);
-    } else {
+    if (!blr) {
+        uint32_t *b = pf_find_next(stream, 10, 0x14000000, 0xfc000000);
         uint32_t *followed = pf_follow_branch(b);
+
+        if (!followed) {
+            printf("%s: failed to follow b\n", __FUNCTION__);
+        }
 
         blr = pf_find_next(followed, 5, 0xd63f0000, 0xfffffc1f);
     }
@@ -71,13 +74,17 @@ void patch_platform_check_new(void *real_buf, void *dyld_buf, size_t dyld_len, u
     uint32_t matches2[] = {
         0xf9400000, // ldr x*, [x0, 0x10]
         0x52800001, // mov w1, *
-        0xd63f0000  // blr
+        0xd63f0000, // blr
+        0xf9400000, // ldr
+        0xf9400000  // ldr
     };
 
     uint32_t masks2[] = {
         0xffc003e0,
         0xffe0001f,
-        0xfffffc1f
+        0xfffffc1f,
+        0xffc00000,
+        0xffc00000,
     };
 
     struct pf_patch32_t patch2 = pf_construct_patch32(matches2, masks2, sizeof(matches2) / sizeof(uint32_t), (void *) inject_shc_new);
