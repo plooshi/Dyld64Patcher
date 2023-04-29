@@ -70,7 +70,7 @@ void patch_platform_check_new(void *real_buf, void *dyld_buf, size_t dyld_len, u
 
     struct pf_patch32_t patch = pf_construct_patch32(matches, masks, sizeof(matches) / sizeof(uint32_t), (void *) inject_shc_new);
 
-    // r2: /x 000040f90100805200003fd6:e003c0ff1f00e0ff1ffcffff
+    // r2: /x 000040f90100805200003fd6000040f9000040f9:e003c0ff1f00e0ff1ffcffff0000c0ff0000c0ff
     uint32_t matches2[] = {
         0xf9400000, // ldr x*, [x0, 0x10]
         0x52800001, // mov w1, *
