@@ -15,9 +15,11 @@ int platform = 0;
 void platform_check_patch() {
     // this patch tricks dyld into thinking everything is for the current platform
     struct nlist_64 *forEachSupportedPlatform = macho_find_symbol(dyld_buf, symbol_to_patch);
+    if (!forEachSupportedPlatform) return;
 
     void *func_addr = dyld_buf + forEachSupportedPlatform->offset;
     uint64_t func_len = macho_get_symbol_size(forEachSupportedPlatform);
+    if (!func_len) return;
 
     patch_platform_check(dyld_buf, func_addr, func_len, platform);
 }
