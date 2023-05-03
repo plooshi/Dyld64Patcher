@@ -18,7 +18,7 @@ uint32_t *get_shc_region(void *buf) {
     
     struct segment_command_64 *segment = macho_get_segment(buf, "__TEXT");
     if (!segment) return 0;
-    struct section_64 *section = macho_get_section(buf, segment, "__unwind_info");
+    struct section_64 *section = macho_get_last_section(segment);
     if (!section) return 0;
 
     void *section_addr = buf + section->offset;
