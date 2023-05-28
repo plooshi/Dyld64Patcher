@@ -3,13 +3,13 @@
 #include <stdbool.h>
 #include "plooshfinder.h"
 #include "plooshfinder32.h"
-#include "macho.h"
+#include "formats/macho.h"
 #include "patches/platform/shellcode.h"
 
 uint32_t *shc_loc;
 int shc_copied = 0;
 
-uint32_t *get_shc_region(void *buf) {
+void set_shc_region(void *buf) {
     // we use a zero region in the the __TEXT segment of dyld
     // this is done so our shellcode is in an executable region
     // __unwind_info is the last section in __TEXT,
@@ -17,9 +17,9 @@ uint32_t *get_shc_region(void *buf) {
     // place our shellcode about half way in
     
     struct segment_command_64 *segment = macho_get_segment(buf, "__TEXT");
-    if (!segment) return 0;
+    if (!segment) return;
     struct section_64 *section = macho_get_last_section(segment);
-    if (!section) return 0;
+    if (!section) return;
 
     void *section_addr = buf + section->offset;
     uint64_t section_len = section->size;
@@ -33,10 +33,8 @@ uint32_t *get_shc_region(void *buf) {
     shc_loc = (uint32_t *) shc_addr;
 
     if (!shc_loc) {
-        printf("%s: no shellcode location!\n", __FUNCTION__);
+        printf("%s: No shellcode location!\n", __FUNCTION__);
     }
-
-    return shc_loc;
 }
 
 uint32_t shellcode_br[] = {

@@ -2,26 +2,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "macho.h"
+#include "formats/macho.h"
 #include "plooshfinder.h"
 #include "patches/platform/patch.h"
 
 #define symbol_to_patch "____ZNK5dyld39MachOFile24forEachSupportedPlatformEU13block_pointerFvNS_8PlatformEjjE_block_invoke"
 
-void *dyld_buf;
-size_t dyld_len;
-int platform = 0;
-
-void platform_check_patch() {
+void platform_check_patch(void *buf, int platform) {
     // this patch tricks dyld into thinking everything is for the current platform
-    struct nlist_64 *forEachSupportedPlatform = macho_find_symbol(dyld_buf, symbol_to_patch);
+    struct nlist_64 *forEachSupportedPlatform = macho_find_symbol(buf, symbol_to_patch);
     if (!forEachSupportedPlatform) return;
 
-    void *func_addr = dyld_buf + forEachSupportedPlatform->offset;
+    void *func_addr = buf + forEachSupportedPlatform->offset;
     uint64_t func_len = macho_get_symbol_size(forEachSupportedPlatform);
     if (!func_len) return;
 
-    patch_platform_check(dyld_buf, func_addr, func_len, platform);
+    patch_platform_check(buf, func_addr, func_len, platform);
 }
 
 int main(int argc, char **argv) {
@@ -39,10 +35,10 @@ int main(int argc, char **argv) {
     }
 
     fseek(fp, 0, SEEK_END);
-    dyld_len = ftell(fp);
+    size_t dyld_len = ftell(fp);
     fseek(fp, 0, SEEK_SET);
 
-    dyld_buf = (void *) malloc(dyld_len);
+    void *dyld_buf = (void *) malloc(dyld_len);
     if (!dyld_buf) {
         printf("Out of memory while allocating region for dyld!\n");
         fclose(fp);
@@ -68,13 +64,13 @@ int main(int argc, char **argv) {
         }
     }
 
-    platform = macho_get_platform(dyld_buf);
+    int platform = macho_get_platform(dyld_buf);
     if (platform == 0) {
         free(orig_dyld_buf);
         return 1;
     }
 
-    platform_check_patch();
+    platform_check_patch(dyld_buf, platform);
 
     fp = fopen(argv[2], "wb");
     if(!fp) {

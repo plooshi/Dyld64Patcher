@@ -8,15 +8,9 @@
 
 int _internal_platform = 0;
 void *_internal_rbuf;
-uint32_t *_internal_shc_loc;
 
-bool inject_shc(struct pf_patch32_t patch, uint32_t *stream) {
-    if (!_internal_shc_loc) {
-        _internal_shc_loc = get_shc_region(_internal_rbuf);
-        if (!_internal_shc_loc) {
-            return false;
-        }
-    }
+bool inject_shc(struct pf_patch32_t *patch, uint32_t *stream) {
+    set_shc_region(_internal_rbuf);
 
     uint32_t *shc_loc = copy_shc(_internal_platform, stream[0]);
     
@@ -27,13 +21,13 @@ bool inject_shc(struct pf_patch32_t patch, uint32_t *stream) {
 
     uint32_t b_base = 0x94000000;
 
-    if ((stream[0] & 0xfffffc1f) == 0xd61f0000) {
+    if (pf_maskmatch32(stream[0], 0xd61f0000, 0xfffffc1f)) {
         b_base = 0x14000000;
     }
 
     stream[0] = b_base | (uint32_t) (shc_loc - stream); // branch to our shellcode to determine if we should change platform or leave it
 
-    printf("%s: Patched platform check (shc b: 0x%x)\n", __FUNCTION__, b_base | (uint32_t) (_internal_shc_loc - stream));
+    printf("%s: Patched platform check (shc b: 0x%x)\n", __FUNCTION__, b_base | (uint32_t) (shc_loc - stream));
 
     return true;
 }
@@ -51,13 +45,13 @@ void patch_platform_check(void *real_buf, void *dyld_buf, size_t dyld_len, uint3
         0xffdffc1f
     };
 
-    struct pf_patch32_t patch = pf_construct_patch32(matches, masks, sizeof(matches) / sizeof(uint32_t), (void *) inject_shc);
+    struct pf_patch_t patch = pf_construct_patch(matches, masks, sizeof(matches) / sizeof(uint32_t), (void *) inject_shc);
 
-    struct pf_patch32_t patches[] = {
+    struct pf_patch_t patches[] = {
         patch
     };
 
-    struct pf_patchset32_t patchset = pf_construct_patchset32(patches, sizeof(patches) / sizeof(struct pf_patch32_t), (void *) pf_find_maskmatch32);
+    struct pf_patchset_t patchset = pf_construct_patchset(patches, sizeof(patches) / sizeof(struct pf_patch_t), (void *) pf_find_maskmatch32);
 
-    pf_patchset_emit32(dyld_buf, dyld_len, patchset);
+    pf_patchset_emit(dyld_buf, dyld_len, patchset);
 }
