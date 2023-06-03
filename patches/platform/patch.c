@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdint.h>
+#include "asm/arm64.h"
 #include "plooshfinder.h"
 #include "plooshfinder32.h"
 #include "patches/platform/patch.h"
@@ -17,19 +18,7 @@ bool inject_shc(struct pf_patch32_t *patch, uint32_t *stream) {
         return false;
     }
 
-    uint32_t b_base = 0x94000000;
-
-    if (pf_maskmatch32(stream[0], 0xd61f0000, 0xfffffc1f)) {
-        b_base = 0x14000000;
-    }
-
-    uint32_t shc_offset = shc_loc - stream; // size of b/bl's imm
-
-    shc_offset <<= 6;
-    shc_offset >>= 6;
-
-    stream[0] = b_base | shc_offset; // branch to our shellcode to determine if we should change platform or leave it
-
+    stream[0] = arm64_branch(stream, shc_loc, !pf_maskmatch32(stream[0], 0xd61f0000, 0xfffffc1f)); // branch to our shellcode to determine if we should change platform or leave it
     printf("%s: Patched platform check (shc b: 0x%x)\n", __FUNCTION__, stream[0]);
 
     return true;
