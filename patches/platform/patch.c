@@ -23,7 +23,10 @@ bool inject_shc(struct pf_patch32_t *patch, uint32_t *stream) {
         b_base = 0x14000000;
     }
 
-    int32_t shc_offset = pf_signextend_32(shc_loc - stream, 26); // size of b/bl's imm
+    uint32_t shc_offset = shc_loc - stream; // size of b/bl's imm
+
+    shc_offset <<= 6;
+    shc_offset >>= 6;
 
     stream[0] = b_base | shc_offset; // branch to our shellcode to determine if we should change platform or leave it
 
