@@ -6,36 +6,8 @@
 #include "formats/macho.h"
 #include "patches/platform/shellcode.h"
 
-uint32_t *shc_loc;
-int shc_copied = 0;
-
-void set_shc_region(void *buf) {
-    // we use a zero region in the the __TEXT segment of dyld
-    // this is done so our shellcode is in an executable region
-    // __unwind_info is the last section in __TEXT,
-    // so we just go into the zero region and
-    // place our shellcode about half way in
-    
-    struct segment_command_64 *segment = macho_get_segment(buf, "__TEXT");
-    if (!segment) return;
-    struct section_64 *section = macho_get_last_section(segment);
-    if (!section) return;
-
-    void *section_addr = buf + section->offset;
-    uint64_t section_len = section->size;
-
-    void *shc_base = section_addr + section_len;
-    uint64_t shc_off_base = (segment->filesize - section->offset) / 2;
-    uint64_t shc_off_aligned = shc_off_base & ~0x3;
-
-    void *shc_addr = shc_base + shc_off_aligned;
-
-    shc_loc = (uint32_t *) shc_addr;
-
-    if (!shc_loc) {
-        printf("%s: No shellcode location!\n", __FUNCTION__);
-    }
-}
+uint32_t *shc_loc = NULL;
+struct section_64 *section = NULL;
 
 uint32_t shellcode_br[] = {
     0xf100283f, // cmp x1, 10
@@ -55,18 +27,13 @@ uint32_t shellcode_blr[] = {
     ret
 };
 
-uint32_t *copy_shc(int platform, uint32_t jmp) {
-    if (!shc_loc) {
-        printf("%s: No shellcode location!\n", __FUNCTION__);
-        return 0;
-    }
-
+uint32_t *copy_shc(void *buf, int platform, uint32_t jmp) {
     uint32_t *shellcode = 0;
     size_t shc_size = 0;
 
-    if (pf_maskmatch32(jmp, 0xd61f0000, 0xfffffc1f)) {
-        if (shc_copied != 0) return shc_loc;
+    bool br = pf_maskmatch32(jmp, 0xd61f0000, 0xfffffc1f);
 
+    if (br) {
         shellcode = shellcode_br;
         shc_size = sizeof(shellcode_br) / sizeof(uint32_t);
 
@@ -80,12 +47,28 @@ uint32_t *copy_shc(int platform, uint32_t jmp) {
         shellcode[5] = jmp;
     }
 
-    uint32_t shc_off = shc_copied * shc_size;
-
-    for (int i = 0; i < shc_size; i++) {
-        shc_loc[shc_off + i] = shellcode[i];
+    if (br && shc_loc != NULL) {
+        return shc_loc;
     }
 
-    shc_copied += 1;
-    return shc_loc + shc_off;
+    if (!section) {
+        section = macho_find_section(buf, "__TEXT", "__text");
+    }
+
+    if (!section) {
+        printf("%s: Unable to find text section!\n", __FUNCTION__);
+        return NULL;
+    }
+
+    shc_loc = pf_find_zero_buf(buf + section->offset, section->size, shc_size);
+    if (!shc_loc) {
+        printf("%s: No shellcode location!\n", __FUNCTION__);
+        return NULL;
+    }
+
+    for (int i = 0; i < shc_size; i++) {
+        shc_loc[i] = shellcode[i];
+    }
+
+    return shc_loc;
 }

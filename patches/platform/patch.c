@@ -10,9 +10,7 @@ int _internal_platform = 0;
 void *_internal_rbuf;
 
 bool inject_shc(struct pf_patch32_t *patch, uint32_t *stream) {
-    set_shc_region(_internal_rbuf);
-
-    uint32_t *shc_loc = copy_shc(_internal_platform, stream[0]);
+    uint32_t *shc_loc = copy_shc(_internal_rbuf, _internal_platform, stream[0]);
     
     if (!shc_loc) {
         printf("%s: no shellcode location??\n", __FUNCTION__);
@@ -25,9 +23,11 @@ bool inject_shc(struct pf_patch32_t *patch, uint32_t *stream) {
         b_base = 0x14000000;
     }
 
-    stream[0] = b_base | (uint32_t) (shc_loc - stream); // branch to our shellcode to determine if we should change platform or leave it
+    int32_t shc_offset = pf_signextend_32(shc_loc - stream, 26); // size of b/bl's imm
 
-    printf("%s: Patched platform check (shc b: 0x%x)\n", __FUNCTION__, b_base | (uint32_t) (shc_loc - stream));
+    stream[0] = b_base | shc_offset; // branch to our shellcode to determine if we should change platform or leave it
+
+    printf("%s: Patched platform check (shc b: 0x%x)\n", __FUNCTION__, stream[0]);
 
     return true;
 }
